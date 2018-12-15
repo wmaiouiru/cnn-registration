@@ -11,11 +11,13 @@ from lap import lapjv
 from utils.shape_context import ShapeContext
 import matplotlib.pyplot as plt
 
+import im_config
+
 class CNN(object):
     def __init__(self):
-        self.height = 224
-        self.width = 224
-        self.shape = np.array([224.0, 224.0])
+        self.height = im_config.HEIGHT
+        self.width = im_config.WIDTH
+        self.shape = np.array([self.width, self.height])
 
         self.sift_weight = 2.0
         self.cnn_weight = 1.0
@@ -29,7 +31,7 @@ class CNN(object):
         self.beta = 2.0
         self.lambd = 0.5
 
-        self.cnnph = tf.placeholder("float", [2, 224, 224, 3])
+        self.cnnph = tf.placeholder("float", [2, self.width, self.height, 3])
         self.vgg = VGG16mo()
         self.vgg.build(self.cnnph)
         self.SC = ShapeContext()
@@ -87,8 +89,8 @@ class CNN(object):
         Y = np.array(seq, dtype='float32') * 8.0 + 4.0
 
         # normalize
-        X = (X - 112.0) / 224.0
-        Y = (Y - 112.0) / 224.0
+        X = (X - self.width/2) / self.width 
+        Y = (Y - self.height/2) / self.height
 
         # prematch and select points
         C_all, quality = match(PD)
@@ -185,4 +187,6 @@ class CNN(object):
             itr = itr + 1
 
         print('finish: itr %d, Q %d, tau %d' % (itr, Q, tau))
-        return ((X*224.0)+112.0)*Xscale, ((Y*224.0)+112.0)*Yscale, ((Z*224.0)+112.0)*Xscale
+        return ((X*self.width)+self.width/2)*Xscale, \
+            ((Y*self.width)+self.width/2)*Yscale, \
+            ((Z*self.width)+self.width/2)*Xscale

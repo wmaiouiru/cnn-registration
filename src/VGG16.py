@@ -4,7 +4,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from utils.utils import gaussian_kernel
-
+import im_config
 VGG_MEAN = [103.939, 116.779, 123.68]
 
 
@@ -19,18 +19,19 @@ class VGG16mo:
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         #print("npy file loaded")
-
+        self.height = im_config.HEIGHT
+        self.width = im_config.WIDTH
     def build(self, bgr):
         blue, green, red = tf.split(axis=3, num_or_size_splits=3, value=bgr)
-        assert red.get_shape().as_list()[1:] == [224, 224, 1]
-        assert green.get_shape().as_list()[1:] == [224, 224, 1]
-        assert blue.get_shape().as_list()[1:] == [224, 224, 1]
+        assert red.get_shape().as_list()[1:] == [self.width, self.height, 1]
+        assert green.get_shape().as_list()[1:] == [self.width, self.height, 1]
+        assert blue.get_shape().as_list()[1:] == [self.width, self.height, 1]
         bgr = tf.concat(axis=3, values=[
             blue - VGG_MEAN[0],
             green - VGG_MEAN[1],
             red - VGG_MEAN[2],
         ])
-        assert bgr.get_shape().as_list()[1:] == [224, 224, 3]
+        assert bgr.get_shape().as_list()[1:] == [self.width, self.height, 3]
 
         self.conv1_1 = self.conv_layer(bgr, "conv1_1")
         self.conv1_2 = self.conv_layer(self.conv1_1, "conv1_2")
